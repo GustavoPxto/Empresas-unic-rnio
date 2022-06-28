@@ -1,4 +1,5 @@
 library(readr)
+library(countrycode)
 options(encoding = "UTF-8")
 Unicorn_Companies <- read_csv("Unicorn_Companies.csv", 
                               col_types = cols(`Valuation ($B)` = col_number(), 
@@ -17,12 +18,15 @@ df$Industry[df$Industry == "Supply chain, logistics, & delivery"] = "Delivery"
 df$Industry[df$Industry == "Data management & analytics"] = "DM&A"
 df$Industry[df$Industry == "Cybersecurity"] = "CS"
 df$Industry[df$Industry == "Mobile & telecommunications"] = "Telefonia"
+df$Code = countrycode(sourcevar = df$Country, origin = "country.name", destination = "iso3c")
 
 library(shiny)
 library(shinydashboard)
 library(dplyr)
 library(plyr)
 library(ggplot2)
+library(plotly)
+
 
 ui <- dashboardPage(skin = "purple",
                     
@@ -140,10 +144,10 @@ server <- function(input, output) {
     l <- list(color = toRGB("grey"), width = 0.5)
     fig <- plot_geo(df1)
     fig <- fig %>% add_trace(
-      z = ~df1$Valuation...B., color = ~df1$Valuation...B., colors = 'Purples',
+      z = ~log(Valuation...B.), color = ~log(Valuation...B.), colors = 'Purples',
       text = ~Country, locations = ~Code, marker = list(line = l)
     )
-    fig <- fig %>% colorbar(title = 'Bilhões de US$', tickprefix = '$')
+    fig <- fig %>% colorbar(title = 'Bilhões de US$ (log)', tickprefix = '$')
     fig <- fig %>% layout(
       title = 'Mercados de empresas unicórnio'
     )
